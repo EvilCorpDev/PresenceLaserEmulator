@@ -22,8 +22,6 @@ public class PresenceLaserSensorTest {
         analogSignalRepository.setAnalogValue(BACK_LASER_PIN, NO_CROSSED);
 
         sensorApi = new PresenceLaserSensor(stateRepository, timerRepository, analogSignalRepository);
-
-        sensorApi.setup();
     }
 
     @Test
@@ -35,8 +33,14 @@ public class PresenceLaserSensorTest {
 
     @Test
     public void shouldIncrementPeopleCountWhenCrossedTwoLaser() {
-        Double peopleCount = stateRepository.getState();
+        sensorApi.setPeopleCount(1);
+        
+        comeInside();
 
+        assertEquals(Double.valueOf(2), stateRepository.getState());
+    }
+
+    private void comeInside() {
         timerRepository.incrementTime(100);
         analogSignalRepository.setAnalogValue(FRONT_LASER_PIN, CROSSED);
         sensorApi.loop();
@@ -52,12 +56,86 @@ public class PresenceLaserSensorTest {
         timerRepository.incrementTime(100_000);
         analogSignalRepository.setAnalogValue(BACK_LASER_PIN, NO_CROSSED);
         sensorApi.loop();
-
-        assertEquals(Double.valueOf(peopleCount + 1), stateRepository.getState());
     }
 
     @Test
-    public void shouldReturnZeroPeopleWhenCrossedOneLaser() {
+    public void shouldDecrementPeopleWhenCrossedTwoLaser() {
+        sensorApi.setPeopleCount(1);
+
+        comeOut();
+
+        assertEquals(Double.valueOf(0), stateRepository.getState());
+    }
+
+    private void comeOut() {
+        timerRepository.incrementTime(100);
+        analogSignalRepository.setAnalogValue(BACK_LASER_PIN, CROSSED);
+        sensorApi.loop();
+
+        timerRepository.incrementTime(999_999);
+        analogSignalRepository.setAnalogValue(FRONT_LASER_PIN, CROSSED);
+        sensorApi.loop();
+
+        timerRepository.incrementTime(100_000);
+        analogSignalRepository.setAnalogValue(BACK_LASER_PIN, NO_CROSSED);
+        sensorApi.loop();
+
+        timerRepository.incrementTime(100);
+        analogSignalRepository.setAnalogValue(FRONT_LASER_PIN, NO_CROSSED);
+        sensorApi.loop();
+    }
+
+
+    @Test
+    public void shouldReturnSameCountOfPeopleWhenPeopleRollbackInside() {
+        sensorApi.setPeopleCount(1);
+
+        timerRepository.incrementTime(100);
+        analogSignalRepository.setAnalogValue(BACK_LASER_PIN, CROSSED);
+        sensorApi.loop();
+
+        timerRepository.incrementTime(100);
+        analogSignalRepository.setAnalogValue(FRONT_LASER_PIN, CROSSED);
+        sensorApi.loop();
+
+        timerRepository.incrementTime(100);
+        analogSignalRepository.setAnalogValue(FRONT_LASER_PIN, NO_CROSSED);
+        sensorApi.loop();
+
+        timerRepository.incrementTime(100_000);
+        analogSignalRepository.setAnalogValue(BACK_LASER_PIN, NO_CROSSED);
+        sensorApi.loop();
+
+        assertEquals(Double.valueOf(1), stateRepository.getState());
+    }
+
+    @Test
+    public void shouldReturnSameCountOfPeopleWhenPeopleRollbackOutside() {
+        sensorApi.setPeopleCount(1);
+
+        timerRepository.incrementTime(100);
+        analogSignalRepository.setAnalogValue(FRONT_LASER_PIN, CROSSED);
+        sensorApi.loop();
+
+        timerRepository.incrementTime(100);
+        analogSignalRepository.setAnalogValue(BACK_LASER_PIN, CROSSED);
+        sensorApi.loop();
+
+        timerRepository.incrementTime(100_000);
+        analogSignalRepository.setAnalogValue(BACK_LASER_PIN, NO_CROSSED);
+        sensorApi.loop();
+
+        timerRepository.incrementTime(100);
+        analogSignalRepository.setAnalogValue(FRONT_LASER_PIN, NO_CROSSED);
+        sensorApi.loop();
+
+        assertEquals(Double.valueOf(1), stateRepository.getState());
+    }
+
+    @Test
+    public void shouldReturnZeroPeopleWhenCrossedOneFrontLaser() {
+        sensorApi.setPeopleCount(0);
+        
         for (int i = 0; i < 100; i++) {
             timerRepository.incrementTime(100);
             analogSignalRepository.setAnalogValue(FRONT_LASER_PIN, CROSSED);
@@ -71,5 +149,44 @@ public class PresenceLaserSensorTest {
         assertEquals(Double.valueOf(0), stateRepository.getState());
     }
 
+    @Test
+    public void shouldReturnZeroPeopleWhenCrossedOneBackLaser() {
+        sensorApi.setPeopleCount(0);
+        
+        for (int i = 0; i < 100; i++) {
+            timerRepository.incrementTime(100);
+            analogSignalRepository.setAnalogValue(BACK_LASER_PIN, CROSSED);
+            sensorApi.loop();
 
+            timerRepository.incrementTime(100);
+            analogSignalRepository.setAnalogValue(BACK_LASER_PIN, NO_CROSSED);
+            sensorApi.loop();
+        }
+
+        assertEquals(Double.valueOf(0), stateRepository.getState());
+    }
+
+    @Test
+    public void shouldReturnNumberOfPeopleComeInside() {
+        sensorApi.setPeopleCount(0);
+
+        for (int i = 0; i < 100; i++) {
+            comeInside();
+            timerRepository.incrementTime(1_000_000);
+        }
+
+        assertEquals(Double.valueOf(100), stateRepository.getState());
+    }
+
+    @Test
+    public void shouldReturnZeroWhenAllPeopleComeOut() {
+        sensorApi.setPeopleCount(100);
+
+        for (int i = 0; i < 100; i++) {
+            comeOut();
+            timerRepository.incrementTime(1_000_000);
+        }
+
+        assertEquals(Double.valueOf(0), stateRepository.getState());
+    }
 }

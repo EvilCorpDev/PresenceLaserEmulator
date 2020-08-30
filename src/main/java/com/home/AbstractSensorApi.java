@@ -17,16 +17,17 @@ public abstract class AbstractSensorApi {
 
     public abstract void setup();
     public abstract void loop();
+    public abstract void setPeopleCount(int peopleCount);
 
-    protected void publish_state(float state) {
+    public void publish_state(float state) {
         stateConsumer.accept(state);
     }
 
-    protected long micros() {
+    public long micros() {
         return timeSupplier.getAsLong();
     }
 
-    protected int analogRead(int analogPin) {
+    public int analogRead(int analogPin) {
         return analogSignalProvider.applyAsInt(analogPin);
     }
 }
