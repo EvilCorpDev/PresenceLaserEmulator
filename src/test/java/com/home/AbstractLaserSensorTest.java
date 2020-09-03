@@ -17,6 +17,50 @@ public abstract class AbstractLaserSensorTest {
     abstract void setSensorApi();
 
     @Test
+    public void shouldIncrementPeopleWhenPeopleWillComeInsideNotFromFirstTime() {
+        sensorApi.setPeopleCount(0);
+
+        timerRepository.incrementTime(100);
+        analogSignalRepository.setAnalogValue(FRONT_LASER_PIN, CROSSED);
+        sensorApi.loop();
+
+        timerRepository.incrementTime(100);
+        analogSignalRepository.setAnalogValue(FRONT_LASER_PIN, NO_CROSSED);
+        sensorApi.loop();
+
+        timerRepository.incrementTime(1_000_000);
+
+        comeInside();
+
+        assertEquals(Double.valueOf(1), stateRepository.getState());
+    }
+
+    @Test
+    public void shouldReturnSameValueWhenPeopleSomeTimeTriggerOnlyOneLine() {
+        sensorApi.setPeopleCount(0);
+
+        timerRepository.incrementTime(100);
+        analogSignalRepository.setAnalogValue(FRONT_LASER_PIN, CROSSED);
+        sensorApi.loop();
+
+        timerRepository.incrementTime(100);
+        analogSignalRepository.setAnalogValue(FRONT_LASER_PIN, NO_CROSSED);
+        sensorApi.loop();
+
+        timerRepository.incrementTime(2_000_000);
+
+        timerRepository.incrementTime(100);
+        analogSignalRepository.setAnalogValue(BACK_LASER_PIN, CROSSED);
+        sensorApi.loop();
+
+        timerRepository.incrementTime(100);
+        analogSignalRepository.setAnalogValue(BACK_LASER_PIN, NO_CROSSED);
+        sensorApi.loop();
+
+        assertEquals(Double.valueOf(0), stateRepository.getState());
+    }
+
+    @Test
     public void shouldReturnZeroPeopleAfterSetup() {
         sensorApi.setup();
 

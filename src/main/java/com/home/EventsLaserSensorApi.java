@@ -86,11 +86,28 @@ public class EventsLaserSensorApi extends AbstractSensorApi {
             throw new RuntimeException("Incompatible states");
         }
 
+        //Looking for start of desiredState
+        int currentStateIndexIterator = findStartIndex(currentState, desiredState[0]);
+
+        if (currentStateIndexIterator == -1) {
+            return false;
+        }
+
         for (int i = 0; i < currentState.length; i++) {
-            if (currentState[i] != desiredState[i]) {
+            if (currentState[currentStateIndexIterator] != desiredState[i]) {
                 return false;
             }
+            currentStateIndexIterator = getNextBufferIndex(currentStateIndexIterator);
         }
         return true;
+    }
+
+    private int findStartIndex(char[] currentState, char startSymbol) {
+        for (int i = 0; i < currentState.length; i++) {
+            if (currentState[i] == startSymbol) {
+                return i;
+            }
+        }
+        return -1;
     }
 }

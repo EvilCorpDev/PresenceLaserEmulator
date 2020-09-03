@@ -41,7 +41,7 @@ public abstract class AbstractSensorApi {
     }
 
     public void addEvent(char eventSymbol) {
-        eventsBufferPointer = getNextEventsBufferIndex();
+        eventsBufferPointer = getNextBufferIndex(eventsBufferPointer);
         eventsBuffer[eventsBufferPointer] = eventSymbol;
     }
 
@@ -55,11 +55,11 @@ public abstract class AbstractSensorApi {
         return eventsBuffer;
     }
 
-    private int getNextEventsBufferIndex() {
-        if (eventsBufferPointer == EVENT_BUFFER_SIZE - 1) {
+    public int getNextBufferIndex(int bufferPointer) {
+        if (bufferPointer == EVENT_BUFFER_SIZE - 1) {
             return 0;
         }
 
-        return eventsBufferPointer + 1;
+        return bufferPointer + 1;
     }
 }
