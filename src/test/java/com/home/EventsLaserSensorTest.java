@@ -6,11 +6,10 @@ import static com.home.GlobalConstant.NO_CROSSED;
 
 import org.junit.Before;
 
-public class PresenceLaserSensorTest extends AbstractLaserSensorTest{
-
+public class EventsLaserSensorTest extends AbstractLaserSensorTest{
     @Override
     void setSensorApi() {
-        sensorApi = new PresenceLaserSensor(stateRepository, timerRepository, analogSignalRepository);
+        sensorApi = new EventsLaserSensorApi(stateRepository, timerRepository, analogSignalRepository);
     }
 
     @Before
